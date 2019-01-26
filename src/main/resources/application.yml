@@ -1,0 +1,7 @@
+spring:
+  data:
+    elasticsearch:
+      cluster-name: boot-elasticsearch
+      cluster-nodes: dreamatach.com:9300
+      repositories:
+        enabled: true
