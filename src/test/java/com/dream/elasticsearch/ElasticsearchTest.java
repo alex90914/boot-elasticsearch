@@ -1,9 +1,11 @@
 package com.dream.elasticsearch;
 
 import com.alibaba.fastjson.JSON;
+import com.dream.elasticsearch.model.Employee;
 import com.dream.elasticsearch.model.User;
+import com.dream.elasticsearch.repository.EmployeeRepository;
 import com.dream.elasticsearch.repository.UserRepository;
-import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,12 +13,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
+import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.List;
+import java.lang.reflect.Field;
 import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -26,6 +35,8 @@ public class ElasticsearchTest {
     private UserRepository userRepository;
     @Autowired
     private ElasticsearchTemplate elasticsearchTemplate;
+    @Autowired
+    private EmployeeRepository employeeRepository;
 
     /**
      * 不存在则新增,存在则修改
@@ -51,17 +62,36 @@ public class ElasticsearchTest {
     }
 
     @Test
-    public void page() {
-        QueryBuilder orderQuery = QueryBuilders.boolQuery();
-        //设置排序方式
-        Sort.Order order1 = new Sort.Order(Sort.Direction.DESC, "salary");
-//        Sort.Order order2 = new Sort.Order(Sort.Direction.ASC, "id");
-        Sort sort = Sort.by(order1);
-        Page<User> page = userRepository.search(orderQuery, PageRequest.of(0, 5, sort));
-        List<User> users = page.getContent();
-        long totalElements = page.getTotalElements();
-        System.out.println(totalElements);
+    public void page() {//sourceBuilder.fetchSource(includeFields, excludeFields);
+        BoolQueryBuilder builder = QueryBuilders.boolQuery()
+                .must(QueryBuilders.fuzzyQuery("firstname", "Dillard"));
+//                .must(QueryBuilders.rangeQuery("age").lte(40).gte(35))
+//                .must(QueryBuilders.fuzzyQuery("address", "Avenue"));
+        Page<Employee> page = employeeRepository.search(builder, PageRequest.of(0, 10));
+        System.out.println("总共员工数量" + page.getTotalElements());
         System.out.println(JSON.toJSONString(page));
+    }
+
+    @Test
+    public void filter() {
+//        BoolQueryBuilder builder = QueryBuilders.boolQuery()
+//                //  .must(QueryBuilders.fuzzyQuery("firstname", "Dillard"))
+//                .must(QueryBuilders.rangeQuery("age").lte(40).gte(35))
+//                .must(QueryBuilders.fuzzyQuery("address", "Avenue"));
+//        String[] fields = new String[]{"account_number", "balance", "age"};
+//        SearchQuery searchQuery = new NativeSearchQueryBuilder()
+//                .withQuery(builder)
+//                .withFields(fields)
+//                .build().setPageable(PageRequest.of(0, 100));
+//        AggregatedPage<Employee> employees = elasticsearchTemplate.queryForPage(searchQuery, Employee.class);
+//        employees.get().forEach(employee -> System.out.println(JSON.toJSONString(employee)));
+
+        Class clazz = Employee.class;
+        // 获取实体类的所有属性信息，返回Field数组
+        Field[] javaFields = clazz.getDeclaredFields();
+        for (Field field : javaFields) {
+            System.out.println(field.getName());
+        }
 
 
     }
