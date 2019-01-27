@@ -74,17 +74,16 @@ public class ElasticsearchTest {
 
     @Test
     public void filter() {
-//        BoolQueryBuilder builder = QueryBuilders.boolQuery()
-//                //  .must(QueryBuilders.fuzzyQuery("firstname", "Dillard"))
-//                .must(QueryBuilders.rangeQuery("age").lte(40).gte(35))
-//                .must(QueryBuilders.fuzzyQuery("address", "Avenue"));
-//        String[] fields = new String[]{"account_number", "balance", "age"};
-//        SearchQuery searchQuery = new NativeSearchQueryBuilder()
-//                .withQuery(builder)
-//                .withFields(fields)
-//                .build().setPageable(PageRequest.of(0, 100));
-//        AggregatedPage<Employee> employees = elasticsearchTemplate.queryForPage(searchQuery, Employee.class);
-//        employees.get().forEach(employee -> System.out.println(JSON.toJSONString(employee)));
+        BoolQueryBuilder builder = QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery("age").lte(40).gte(35))
+                .must(QueryBuilders.fuzzyQuery("address", "Avenue"));
+        String[] fields = new String[]{"account_number", "balance", "age"};
+        SearchQuery searchQuery = new NativeSearchQueryBuilder()
+                .withQuery(builder)
+                .withFields(fields)
+                .build().setPageable(PageRequest.of(0, 100));
+        AggregatedPage<Employee> employees = elasticsearchTemplate.queryForPage(searchQuery, Employee.class);
+        employees.get().forEach(employee -> System.out.println(JSON.toJSONString(employee)));
 
         Class clazz = Employee.class;
         // 获取实体类的所有属性信息，返回Field数组
